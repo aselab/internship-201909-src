@@ -1,8 +1,23 @@
 import React, { Component } from 'react';
 import { Text, TextInput, View, StyleSheet } from 'react-native';
+import moment from 'moment';
 import { Card } from 'react-native-elements';
+import DateTimePicker from 'react-native-modal-datetime-picker';
 
 export default class StickyNote extends Component {
+  state = {
+    isDateTimePickerVisible: false,
+    limitDateTime: moment().format('YYYY年MM月DD日 HH時mm分')
+  };
+
+  showDateTimePicker = () => this.setState({ isDateTimePickerVisible: true });
+  hideDateTimePicker = () => this.setState({ isDateTimePickerVisible: false });
+
+  setDateTime = dateTime =>
+    this.setState({
+      limitDateTime: moment(dateTime).format('YYYY年MM月DD日 HH時mm分'),
+    });
+
   render() {
     return (
       <Card
@@ -25,15 +40,25 @@ export default class StickyNote extends Component {
         />
         <View style={styles.datetimeContainer}>
           <Text>期限：</Text>
-          <Text >
-            2019/08/22 17:30
+          <Text onPress={this.showDateTimePicker}>
+            {this.state.limitDateTime}
           </Text>
         </View>
+        <DateTimePicker
+          isVisible={this.state.isDateTimePickerVisible}
+          mode={'datetime'}
+          onConfirm={dateTime => {
+            this.setDateTime(dateTime);
+            this.hideDateTimePicker();
+          }}
+          onCancel={this.hideDateTimePicker}
+        />
       </Card>
     );
   }
 }
- const styles = StyleSheet.create({
+
+const styles = StyleSheet.create({
   card: {
     backgroundColor: '#f5f99a',
   },
@@ -42,4 +67,3 @@ export default class StickyNote extends Component {
     flexDirection: 'row',
   },
 }); 
-
