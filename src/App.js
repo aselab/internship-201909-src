@@ -1,41 +1,69 @@
 import * as React from 'react';
-import { KeyboardAvoidingView, ScrollView, StyleSheet } from 'react-native';
+import { Text, KeyboardAvoidingView, ScrollView, StyleSheet } from 'react-native';
 import StickyNote from './StickyNote';
 import uuidv4 from 'uuid/v4'
+import moment from 'moment';
 import { Button } from 'react-native-elements';
 
-
 export default class App extends React.Component {
-
   state = {
     StickyNoteList: [],
   };
-
-  deleteStickyNote = uuid => {
+  
+   addStickyNote = () => {
     const stickyNoteList = this.state.StickyNoteList;
-    const newList = stickyNoteList.filter(note => note.key != uuid);
+    const uuid = uuidv4();
+    stickyNoteList.push({
+      component: <StickyNote key={uuid} uuid={uuid} setLimitDateTime={this.setLimitDateTime} deleteStickyNote={this.deleteStickyNote} />,
+      limitDateTime: moment()
+    });
+    this.setState({ StickyNoteList: stickyNoteList });
+  };
+
+  setLimitDateTime = (dateTime, uuid) => {
+    const stickyNoteList = this.state.StickyNoteList
+    const newList = stickyNoteList.map(note => {
+      if(note.component.key === uuid) {
+        note.limitDateTime = dateTime;
+      }
+      return note;
+    });
     this.setState({ StickyNoteList: newList });
   }
 
-  addStickyNote = () => {
+  deleteStickyNote = uuid => {
     const stickyNoteList = this.state.StickyNoteList;
-    const uuid = uuidv4();
-    stickyNoteList.push(
-      <StickyNote key={uuid} uuid={uuid} deleteStickyNote={this.deleteStickyNote} />
-    );
-    this.setState({ StickyNoteList: stickyNoteList });
-  };
+    const newList = stickyNoteList.filter(note => note.component.key != uuid);
+    this.setState({ StickyNoteList: newList });
+  }
+
+  sortStickyNote = () =>{
+    const sortedList = this.state.StickyNoteList.sort((a, b) => {
+      if (a.limitDateTime < b.limitDateTime) return -1;
+      if (a.limitDateTime > b.limitDateTime) return 1;
+      return 0;
+    })
+    this.setState({
+      StickyNoteList: sortedList,
+    });
+
+  }
 
   render() {
     return (
       <KeyboardAvoidingView style={styles.container} behavior="padding">
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {this.state.StickyNoteList}
+          {this.state.StickyNoteList.map(note => note.component)}        
         </ScrollView>
         <Button
           title="＋"
           onPress={this.addStickyNote}
           buttonStyle={styles.addButton}
+        />
+        <Button
+          title="sort"
+          onPress={this.sortStickyNote}
+          buttonStyle={styles.sortButton}
         />
       </KeyboardAvoidingView>
     );
@@ -56,6 +84,9 @@ const styles = StyleSheet.create({
     left: 20,
     bottom: 20,
     position: 'absolute',
-    borderRadius: 50,
+    borderRadius: 50
   },
+  sortButton:{
+
+  }
 });
